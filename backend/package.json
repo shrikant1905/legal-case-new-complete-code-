@@ -1,0 +1,71 @@
+{
+  "name": "heugly-bludworth-backend",
+  "version": "1.0.0",
+  "description": "Backend API for HEUGLY & BLUDWORTH Legal Practice Management SaaS",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:push": "prisma db push",
+    "prisma:studio": "prisma studio",
+    "prisma:seed": "prisma db seed",
+    "db:test": "tsx src/test-db.ts",
+    "db:backup": "tsx src/scripts/backup-db.ts",
+    "db:seed:stages": "tsx src/scripts/seed-workflow-stages.ts",
+    "user:create-admin": "tsx src/scripts/create-admin.ts",
+    "test": "tsx src/tests/foundation-db-test-suite.ts && tsx src/tests/auth-rbac-test-suite.ts && tsx src/tests/client-api-test-suite.ts && tsx src/tests/matter-api-test-suite.ts && tsx src/tests/business-modules-test-suite.ts",
+    "test:foundation": "tsx src/tests/foundation-db-test-suite.ts",
+    "test:auth": "tsx src/tests/auth-rbac-test-suite.ts",
+    "test:clients": "tsx src/tests/client-api-test-suite.ts",
+    "test:matters": "tsx src/tests/matter-api-test-suite.ts",
+    "test:business": "tsx src/tests/business-modules-test-suite.ts",
+    "test:templates": "tsx src/tests/template-registry-test-suite.ts",
+    "test:generation": "tsx src/tests/document-generation-test-suite.ts",
+    "test:events": "tsx src/tests/event-driven-drafts-test-suite.ts",
+    "test:validation": "tsx src/tests/missing-info-validation-test-suite.ts",
+    "test:pi-automations": "tsx src/tests/pi-document-automation-test-suite.ts",
+    "prisma:deploy": "prisma migrate deploy"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "keywords": [
+    "legal",
+    "practice-management",
+    "mysql",
+    "prisma",
+    "express",
+    "typescript"
+  ],
+  "author": "Heugly & Bludworth",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "docxtemplater": "^3.71.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "express-rate-limit": "^8.7.4",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.3",
+    "mysql2": "^3.11.4",
+    "pizzip": "^3.3.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^22.9.0",
+    "prisma": "^5.22.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}
