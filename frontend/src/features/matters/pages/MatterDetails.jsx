@@ -256,7 +256,7 @@ export function MatterDetails() {
   const { matters, updateMatter, activeMatter, setActiveMatter } = useMatters();
   const { tasks, addTask, updateTaskStatus } = useTasks();
   const { timeEntries } = useTime();
-  const { currentUser } = useAuth();
+  const { currentUser, allUsers } = useAuth();
   const permissions = usePermissions();
   const { addToast } = useToast();
 
@@ -449,14 +449,19 @@ export function MatterDetails() {
     e.preventDefault();
     if (!newTaskTitle.trim()) return;
 
+    const paralegalUser = allUsers?.find(u => u.role === 'paralegal') || currentUser;
+    const assignedUserId = paralegalUser?.id || matter.responsibleAttorneyId || currentUser?.id;
+    const assignedUserName = paralegalUser?.name || currentUser?.name || 'Assigned Counsel';
+
     addTask({
       title: newTaskTitle,
       matterId: matter.id,
       matterTitle: matter.title,
       clientId: matter.clientId,
       clientName: matter.clientName,
-      assignedToId: 'usr-4',
-      assignedToName: 'Marcus Vance',
+      assignedToId: assignedUserId,
+      assignedToUserId: assignedUserId,
+      assignedToName: assignedUserName,
       dueDate: newTaskDue,
       priority: newTaskPriority,
       status: 'Not Started',

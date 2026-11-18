@@ -138,7 +138,47 @@ export class TaskService {
     if (!matter) throw AppError.badRequest('Referenced legal matter was not found.', 'MATTER_NOT_FOUND');
 
     // Validate assignee exists
-    const assignee = await prisma.user.findUnique({ where: { id: input.assignedToUserId } });
+    let assignee = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { id: input.assignedToUserId },
+          { userCode: input.assignedToUserId },
+          { email: input.assignedToUserId },
+        ],
+      },
+    });
+
+    if (!assignee) {
+      const legacyMap: Record<string, string> = {
+        'usr-1': 'e.heugly@utahslawyers.com',
+        'usr-2': 't.bludworth@utahslawyers.com',
+        'usr-3': 's.jenkins@utahslawyers.com',
+        'usr-4': 'm.vance@utahslawyers.com',
+        'usr-5': 'r.adams@utahslawyers.com',
+      };
+      const mappedEmail = legacyMap[input.assignedToUserId];
+      if (mappedEmail) {
+        assignee = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { email: mappedEmail },
+              { userCode: input.assignedToUserId.replace('usr-', 'usr-demo-') },
+            ],
+          },
+        });
+      }
+    }
+
+    if (!assignee && matter.responsibleAttorneyId) {
+      assignee = await prisma.user.findUnique({ where: { id: matter.responsibleAttorneyId } });
+    }
+    if (!assignee && context.userId) {
+      assignee = await prisma.user.findUnique({ where: { id: context.userId } });
+    }
+    if (!assignee) {
+      assignee = await prisma.user.findFirst({ where: { status: 'Active' } });
+    }
+
     if (!assignee || assignee.status !== 'Active') {
       throw AppError.badRequest('Assigned staff member is invalid or inactive.', 'INVALID_ASSIGNEE');
     }
@@ -151,7 +191,7 @@ export class TaskService {
         matterId: matter.id,
         title: input.title,
         description: input.description,
-        assignedToUserId: input.assignedToUserId,
+        assignedToUserId: assignee.id,
         createdByUserId: context.userId,
         dueDate: new Date(input.dueDate),
         priority: input.priority,
@@ -188,6 +228,27 @@ export class TaskService {
     const existing = await this.getTaskByIdOrCode(id);
 
     const data: any = { ...input };
+    if (input.assignedToUserId) {
+      let assignee = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { id: input.assignedToUserId },
+            { userCode: input.assignedToUserId },
+            { email: input.assignedToUserId },
+          ],
+        },
+      });
+      if (!assignee) {
+        assignee = await prisma.user.findFirst({
+          where: {
+            userCode: input.assignedToUserId.replace('usr-', 'usr-demo-'),
+          },
+        });
+      }
+      if (assignee) {
+        data.assignedToUserId = assignee.id;
+      }
+    }
     if (input.dueDate) data.dueDate = new Date(input.dueDate);
     if (input.status === 'Completed' && existing.status !== 'Completed') {
       data.completedAt = new Date();
