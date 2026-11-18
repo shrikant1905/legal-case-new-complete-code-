@@ -53,6 +53,7 @@ import { formatCurrency, formatHours } from '../../../utils/formatCurrency';
 import { formatDate } from '../../../utils/formatDate';
 import { documentService } from '../../../services/documentService';
 import { matterService } from '../../../services/matterService';
+import { calendarService } from '../../../services/calendarService';
 import { StageProgressBar } from '../components/StageProgressBar';
 import { RelatedPartiesTab } from '../components/RelatedPartiesTab';
 import { RelativeDeadlineCalculator } from '../../calendar/components/RelativeDeadlineCalculator';
@@ -1827,6 +1828,29 @@ export function MatterDetails() {
           initialAnchorDate={matter.nextCourtDate || '2027-02-15'}
           matterNumber={matter.matterNumber}
           matterTitle={matter.title}
+          onApplyDeadlines={async (newDeadlines) => {
+            let savedCount = 0;
+            for (const d of newDeadlines) {
+              try {
+                await calendarService.createEvent({
+                  matterId: matter.id,
+                  title: d.title,
+                  eventType: 'Filing Deadline',
+                  startTime: new Date(`${d.calculatedDate}T09:00:00`).toISOString(),
+                  endTime: new Date(`${d.calculatedDate}T10:00:00`).toISOString(),
+                  location: 'Utah Third District Court',
+                  judge: d.ruleCitation,
+                  isCourtAppearance: false,
+                });
+                savedCount++;
+              } catch (err) {
+                console.error('Failed to create calendar event for deadline:', d.title, err);
+              }
+            }
+            if (savedCount > 0) {
+              addToast(`${savedCount} court deadlines saved directly to database.`, 'success');
+            }
+          }}
         />
       )}
 
