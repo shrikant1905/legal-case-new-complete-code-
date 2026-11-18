@@ -19,7 +19,7 @@ import { useMatters } from '../../../context/MatterContext';
 import { useTasks } from '../../../context/TaskContext';
 import { getWorkflowForPracticeArea } from '../../../data/practiceAreaWorkflows';
 
-export function StageProgressBar({ matter }) {
+export function StageProgressBar({ matter, onStageAdvance }) {
   const { updateMatter } = useMatters();
   const { addTask } = useTasks();
   const { addToast } = useToast();
@@ -60,6 +60,10 @@ export function StageProgressBar({ matter }) {
       status: nextStage.name.includes('Trial') || nextStage.name.includes('Enforcement') ? 'In Trial' : 'Active',
       lastStageAdvanceDate: new Date().toISOString().split('T')[0],
     });
+
+    if (onStageAdvance) {
+      onStageAdvance(nextStage.name);
+    }
 
     // 2. Automatically spawn practice-area specific workflow tasks (Filevine Automation)
     let spawnedCount = 0;
