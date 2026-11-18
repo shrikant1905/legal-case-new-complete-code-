@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const createTaskSchema = z.object({
-  matterId: z.string().uuid(),
+  matterId: z.string().min(1, 'matterId is required'),
   title: z.string().min(2).max(255),
   description: z.string().max(2000).optional(),
   assignedToUserId: z.string().uuid(),

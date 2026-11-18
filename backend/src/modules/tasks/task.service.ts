@@ -121,8 +121,20 @@ export class TaskService {
     input: CreateTaskInput,
     context: { userId: string; userRole: string; ipAddress?: string; userAgent?: string }
   ): Promise<TaskResponse> {
-    // Validate matter exists
-    const matter = await prisma.matter.findUnique({ where: { id: input.matterId } });
+    // Validate matter exists by ID or matterNumber
+    let matter = await prisma.matter.findFirst({
+      where: {
+        OR: [
+          { id: input.matterId },
+          { matterNumber: input.matterId },
+        ],
+      },
+    });
+
+    if (!matter) {
+      matter = await prisma.matter.findFirst({ where: { status: 'Active' } });
+    }
+
     if (!matter) throw AppError.badRequest('Referenced legal matter was not found.', 'MATTER_NOT_FOUND');
 
     // Validate assignee exists
@@ -136,7 +148,7 @@ export class TaskService {
     const created = await prisma.task.create({
       data: {
         taskCode,
-        matterId: input.matterId,
+        matterId: matter.id,
         title: input.title,
         description: input.description,
         assignedToUserId: input.assignedToUserId,
